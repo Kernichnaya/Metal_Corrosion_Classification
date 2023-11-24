@@ -5,9 +5,9 @@ from tensorflow.keras import layers
 
 import argparse
 parser = argparse.ArgumentParser(description='train settings')
-parser.add_argument('epoch', type=int)
-parser.add_argument('lr', type=float)
-parser.add_argument('optimizer', type=str)
+parser.add_argument('epoch', type=int, default='7')
+parser.add_argument('lr', type=float, default='0.02')
+parser.add_argument('optimizer', type=str, default='RMSprop')
 parser.add_argument('base_network', type=str, default='VGG16', help='VGG16, RESNET50')
 args = parser.parse_args()
 
@@ -54,10 +54,14 @@ x = layers.GlobalAveragePooling2D(name="global_average_pooling_layer")(x)
 outputs = layers.Dense(1, activation="sigmoid", name="output_layer")(x)
 
 model = tf.keras.Model(inputs, outputs)
+if args.optimizer == 'RMSprop':
+    optimizer = tf.keras.optimizers.RMSprop(lr=args.lr)
+else:
+    optimizer = tf.keras.optimizers.Adam(lr=args.lr)
 
 model.compile(
     loss="binary_crossentropy",
-    optimizer=tf.keras.optimizers.RMSprop(lr=args.lr),
+    optimizer = optimizer,
     metrics=["accuracy"]
 )
 
