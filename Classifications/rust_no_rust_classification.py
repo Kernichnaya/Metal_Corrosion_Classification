@@ -3,12 +3,20 @@ from tensorflow.keras.layers.experimental import preprocessing
 from helper_functions import walk_through_dir, create_tensorboard_callback
 from tensorflow.keras import layers
 
+import argparse
+parser = argparse.ArgumentParser(description='train settings')
+parser.add_argument('epoch', type=int)
+parser.add_argument('lr', type=float)
+parser.add_argument('optimizer', type=str)
+parser.add_argument('base_network', type=str, default='VGG16', help='VGG16, RESNET50')
+args = parser.parse_args()
+
 train_dir = "../Datasets/Classification datasets/train"
 test_dir = "../Datasets/Classification datasets/test"
 
 walk_through_dir("../Datasets/Classification datasets/")
 
-IMG_SIZE = (224,224)
+IMG_SIZE = (224, 224)
 
 train_data = tf.keras.preprocessing.image_dataset_from_directory(
     train_dir,
@@ -33,7 +41,10 @@ data_augmentation = tf.keras.Sequential([
     preprocessing.Rescaling(scale=1./255)
 ], name="augmented_layer")
 
-base_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet')
+if args.base_network == 'VGG16':
+    base_model = tf.keras.applications.VGG16(include_top=False, weights='imagenet')
+elif args.base_network == 'RESNET50':
+    base_model = tf.keras.applications.ResNet50(include_top=False, weights='imagenet')
 base_model.trainable = False
 
 inputs = layers.Input(shape=input_shape, name="input_layer")
@@ -46,13 +57,13 @@ model = tf.keras.Model(inputs, outputs)
 
 model.compile(
     loss="binary_crossentropy",
-    optimizer=tf.keras.optimizers.RMSprop(lr=0.02),
+    optimizer=tf.keras.optimizers.RMSprop(lr=args.lr),
     metrics=["accuracy"]
 )
 
 initial_epoch = 0
 
-fine_tune_epochs = initial_epoch + 7
+fine_tune_epochs = initial_epoch + args.epoch
 
 history = model.fit(
     train_data,
