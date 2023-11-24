@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras.layers.experimental import preprocessing
-from helper_functions import walk_through_dir, create_tensorboard_callback
+from helper_functions import walk_through_dir, create_tensorboard_callback, make_confusion_matrix
 from tensorflow.keras import layers
+from matplotlib import pyplot as plt
 
 import argparse
 parser = argparse.ArgumentParser(description='train settings')
@@ -79,5 +80,16 @@ history = model.fit(
     )
 
 results = model.evaluate(test_data)
+print(results, '________________')
 
 model.save("rust_binary_v2.h5")
+
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
+
+make_confusion_matrix()
